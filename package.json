@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
-    "build": "tsc && vite build",
+    "dev": "vite --host 127.0.0.1 --open /index.source.html",
+    "build": "tsc && vite build && node scripts/sync-pages-build.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"

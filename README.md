@@ -23,6 +23,8 @@ npm install
 npm run dev
 ```
 
+The development entry is `index.source.html`. The repository-root `index.html` is the committed production build used when GitHub Pages is configured as `main` / `root`.
+
 ## Verification
 
 ```powershell
@@ -39,4 +41,4 @@ This project is configured for a project page at:
 https://<user>.github.io/exr-cropper-web/
 ```
 
-The workflow in `.github/workflows/deploy.yml` builds and deploys `dist` on pushes to `main`.
+If GitHub Pages is set to `main` / `root`, it serves the committed root `index.html` and `assets/`. The workflow in `.github/workflows/deploy.yml` is also available if Pages is later switched to GitHub Actions.
