@@ -10,9 +10,13 @@ The demo uses only `path tracer 1spp` and `path tracer reference`.
 
 ## Sample
 
-| path tracer 1spp crop | path tracer reference crop | path tracer reference full-scene overlay |
-| --- | --- | --- |
-| ![path tracer 1spp crop](screenshots/sample-pt-1spp-crop.png) | ![path tracer reference crop](screenshots/sample-reference-crop.png) | ![path tracer reference full-scene overlay](screenshots/sample-reference-overlay.png) |
+| 1spp | REF |
+| --- | --- |
+| ![path tracer 1spp crop](screenshots/sample-pt-1spp-crop.png) | ![path tracer reference crop](screenshots/sample-reference-crop.png) |
+
+**Overlay**
+
+![path tracer reference full-scene overlay](screenshots/sample-reference-overlay.png)
 
 ## Usage
 
