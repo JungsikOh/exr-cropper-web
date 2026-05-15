@@ -1,31 +1,17 @@
 # EXR Cropper Web
 
-Static GitHub Pages version of the Python EXR Cropper desktop app.
+GitHub Pages: [https://jungsikoh.github.io/exr-cropper-web/](https://jungsikoh.github.io/exr-cropper-web/)
 
-## Features
-
-- Load multiple `.exr` files locally in the browser.
-- Select a reference image.
-- Create and edit crop boxes by dragging in the preview or editing coordinates.
-- Adjust exposure for preview and PNG export.
-- Download matching lossless EXR and tonemapped PNG crops plus a reference overlay PNG as `exr-crops.zip`.
-
-## Limits
-
-The EXR crop output preserves all regular full-resolution channels, channel names, and channel pixel types through `@bb-studio/exr`. PNG preview/export is intentionally tonemapped to 8-bit for viewing and figure placement. Deep images, multipart workflows, and subsampled channels are not supported.
-
-For evaluation, use the exported `.exr` files rather than the `.png` files. The PNG files apply exposure, clipping, gamma, and 8-bit quantization.
-
-## Development
+## Local Run
 
 ```powershell
 npm install
 npm run dev
 ```
 
-The development entry is `index.source.html`. The repository-root `index.html` is the committed production build used when GitHub Pages is configured as `main` / `root`.
+The development entry is `index.source.html`.
 
-## Verification
+## Verify And Build
 
 ```powershell
 npm run typecheck
@@ -33,12 +19,4 @@ npm run test
 npm run build
 ```
 
-## GitHub Pages
-
-This project is configured for a project page at:
-
-```text
-https://<user>.github.io/exr-cropper-web/
-```
-
-If GitHub Pages is set to `main` / `root`, it serves the committed root `index.html` and `assets/`. The workflow in `.github/workflows/deploy.yml` is also available if Pages is later switched to GitHub Actions.
+`npm run build` updates the root `index.html` and `assets/` used by GitHub Pages when Pages is configured as `main` / `root`.

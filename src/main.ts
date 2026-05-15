@@ -433,9 +433,18 @@ function renderFileList(): void {
     const item = document.createElement("li");
     const button = document.createElement("button");
     button.type = "button";
-    button.className = image.id === state.currentId ? "list-item active" : "list-item";
+    button.className = listItemClass(image.id === state.currentId, image.id === state.refId);
     button.title = `${image.fileName} (${image.width}x${image.height})`;
-    button.textContent = `${image.id === state.refId ? "[REF] " : ""}${image.fileName}`;
+    if (image.id === state.refId) {
+      const marker = document.createElement("span");
+      marker.className = "ref-marker";
+      marker.textContent = "[REF]";
+      button.append(marker, " ");
+    }
+    const fileName = document.createElement("span");
+    fileName.className = "file-name";
+    fileName.textContent = image.fileName;
+    button.append(fileName);
     button.addEventListener("click", () => {
       state.currentId = image.id;
       rebuildPreviewRaster();
@@ -450,6 +459,10 @@ function renderFileList(): void {
   const current = currentImage();
   elements.imageMeta.textContent =
     current === undefined ? "No EXR loaded" : `${current.fileName}  ${current.width}x${current.height}`;
+}
+
+function listItemClass(active: boolean, ref: boolean): string {
+  return ["list-item", active ? "active" : "", ref ? "ref" : ""].filter(Boolean).join(" ");
 }
 
 function renderBoxList(): void {
