@@ -124,6 +124,7 @@ elements.preview.addEventListener("pointerdown", beginDrag);
 elements.preview.addEventListener("pointermove", continueDrag);
 elements.preview.addEventListener("pointerup", endDrag);
 elements.preview.addEventListener("pointercancel", endDrag);
+document.addEventListener("keydown", handleKeyboardNavigation);
 
 new ResizeObserver(renderPreview).observe(elements.preview);
 syncUi();
@@ -176,6 +177,38 @@ function removeCurrentFile(): void {
   rebuildPreviewRaster();
   syncUi();
   setStatus(state.images.length > 0 ? `Removed ${removed.fileName}.` : "No EXR loaded.");
+}
+
+function handleKeyboardNavigation(event: KeyboardEvent): void {
+  if (event.defaultPrevented || isTextEditingTarget(event.target)) {
+    return;
+  }
+  if (event.key === "ArrowUp") {
+    if (switchScene(-1)) {
+      event.preventDefault();
+    }
+  } else if (event.key === "ArrowDown") {
+    if (switchScene(1)) {
+      event.preventDefault();
+    }
+  }
+}
+
+function switchScene(direction: -1 | 1): boolean {
+  if (state.images.length < 2) {
+    return false;
+  }
+  const currentIndex = Math.max(
+    0,
+    state.images.findIndex((image) => image.id === state.currentId),
+  );
+  const nextIndex = (currentIndex + direction + state.images.length) % state.images.length;
+  const next = state.images[nextIndex];
+  state.currentId = next.id;
+  rebuildPreviewRaster();
+  syncUi();
+  setStatus(`Scene ${nextIndex + 1}/${state.images.length}: ${next.width}x${next.height}.`);
+  return true;
 }
 
 function setCurrentAsRef(): void {
@@ -348,7 +381,8 @@ function renderPreview(): void {
   }
 
   elements.dropHint.classList.add("hidden");
-  context.imageSmoothingEnabled = true;
+  context.imageSmoothingEnabled = displayRect.width !== image.width || displayRect.height !== image.height;
+  context.imageSmoothingQuality = "high";
   context.drawImage(
     state.previewRaster,
     displayRect.x,
@@ -652,6 +686,18 @@ function byId<T extends HTMLElement>(id: string): T {
     throw new Error(`Missing element #${id}.`);
   }
   return element as T;
+}
+
+function isTextEditingTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+  return (
+    target.isContentEditable ||
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement
+  );
 }
 
 function clamp01(value: number): number {
