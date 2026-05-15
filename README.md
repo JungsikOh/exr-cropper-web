@@ -13,9 +13,9 @@ The demo uses only these input files from `path-tracer-python/input_exr`:
 
 ## Sample
 
-| PT 1 spp crop | Reference crop | Reference overlay |
+| PT 1 spp crop | Reference crop | Reference full-scene overlay |
 | --- | --- | --- |
-| ![PT 1 spp crop](screenshots/sample-pt-1spp-crop.png) | ![Reference crop](screenshots/sample-reference-crop.png) | ![Reference overlay](screenshots/sample-reference-overlay.png) |
+| ![PT 1 spp crop](screenshots/sample-pt-1spp-crop.png) | ![Reference crop](screenshots/sample-reference-crop.png) | ![Reference full-scene overlay](screenshots/sample-reference-overlay.png) |
 
 ## Usage
 
