@@ -11,12 +11,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@bb-studio/exr": "^0.1.1",
     "jszip": "^3.10.1",
-    "lucide": "^0.475.0",
-    "three": "^0.184.0"
+    "lucide": "^0.475.0"
   },
   "devDependencies": {
-    "@types/three": "^0.184.1",
     "typescript": "^5.8.3",
     "vite": "^6.2.0",
     "vitest": "^3.1.1"

@@ -20,7 +20,7 @@ import {
   cropOutputStem,
   hexToRgb,
   regionFromPoints,
-  tonemapRgbaToBytes,
+  tonemapChannelsToBytes,
   type CropBox,
   type LoadedExr,
 } from "./processing";
@@ -318,7 +318,7 @@ function rebuildPreviewRaster(): void {
     state.previewRaster = null;
     return;
   }
-  const bytes = tonemapRgbaToBytes(image.rgba, state.exposureStops);
+  const bytes = tonemapChannelsToBytes(image.channels, image.rgbNames, state.exposureStops);
   const raster = document.createElement("canvas");
   raster.width = image.width;
   raster.height = image.height;

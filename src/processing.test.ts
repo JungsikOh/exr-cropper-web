@@ -2,33 +2,41 @@ import { describe, expect, test } from "vitest";
 
 import {
   clampRegion,
+  cropChannels,
   cropOutputStem,
-  cropRgba,
   drawRegionOutlines,
   regionSuffix,
-  tonemapRgbaToBytes,
+  tonemapChannelsToBytes,
   type CropBox,
+  type LoadedChannel,
 } from "./processing";
 
 describe("processing", () => {
-  test("cropRgba uses pixel bounds", () => {
-    const rgba = new Float32Array(5 * 4 * 4);
-    for (let i = 0; i < rgba.length; i += 1) {
-      rgba[i] = i;
+  test("cropChannels uses pixel bounds", () => {
+    const pixels = new Float32Array(5 * 4);
+    for (let i = 0; i < pixels.length; i += 1) {
+      pixels[i] = i;
     }
+    const channels: Record<string, LoadedChannel> = {
+      R: { name: "R", pixelType: 1, xSampling: 1, ySampling: 1, data: pixels },
+    };
 
-    const cropped = cropRgba(rgba, 5, 4, { x: 1, y: 2, width: 3, height: 2 });
+    const cropped = cropChannels(channels, 5, 4, { x: 1, y: 2, width: 3, height: 2 });
 
-    expect(Array.from(cropped)).toEqual([
-      ...Array.from(rgba.subarray((2 * 5 + 1) * 4, (2 * 5 + 4) * 4)),
-      ...Array.from(rgba.subarray((3 * 5 + 1) * 4, (3 * 5 + 4) * 4)),
-    ]);
+    expect(Array.from(cropped.R.data)).toEqual([11, 12, 13, 16, 17, 18]);
+    expect(cropped.R.pixelType).toBe(1);
   });
 
-  test("tonemapRgbaToBytes applies exposure and gamma", () => {
-    const rgba = new Float32Array([0.25, 0.5, 2.0, 1.0]);
+  test("tonemapChannelsToBytes applies exposure and gamma", () => {
+    const channels: Record<string, LoadedChannel> = {
+      R: { name: "R", pixelType: 1, xSampling: 1, ySampling: 1, data: new Float32Array([0.25]) },
+      G: { name: "G", pixelType: 1, xSampling: 1, ySampling: 1, data: new Float32Array([0.5]) },
+      B: { name: "B", pixelType: 1, xSampling: 1, ySampling: 1, data: new Float32Array([2.0]) },
+    };
 
-    expect(Array.from(tonemapRgbaToBytes(rgba, 1.0, 2.0))).toEqual([180, 255, 255, 255]);
+    expect(Array.from(tonemapChannelsToBytes(channels, ["R", "G", "B"], 1.0, 2.0))).toEqual([
+      180, 255, 255, 255,
+    ]);
   });
 
   test("clampRegion matches image bounds", () => {

@@ -15,12 +15,21 @@ export type CropBox = {
   lineWidth: number;
 };
 
+export type LoadedChannel = {
+  name: string;
+  pixelType: number;
+  xSampling: number;
+  ySampling: number;
+  data: Float32Array;
+};
+
 export type LoadedExr = {
   id: string;
   fileName: string;
   width: number;
   height: number;
-  rgba: Float32Array;
+  channels: Record<string, LoadedChannel>;
+  rgbNames: [string, string, string];
 };
 
 export type ExportFailure = {
@@ -86,50 +95,88 @@ export function fileStem(fileName: string): string {
   return dot > 0 ? baseName.slice(0, dot) : baseName;
 }
 
-export function cropRgba(
-  rgba: Float32Array,
+export function cropChannels(
+  channels: Record<string, LoadedChannel>,
   imageWidth: number,
   imageHeight: number,
   region: Region,
-): Float32Array {
+): Record<string, LoadedChannel> {
   validateRegion(region, imageWidth, imageHeight);
-  const expected = imageWidth * imageHeight * 4;
-  if (rgba.length !== expected) {
-    throw new Error(`RGBA data has ${rgba.length} values; expected ${expected}.`);
-  }
-
-  const cropped = new Float32Array(region.width * region.height * 4);
-  const sourceStride = imageWidth * 4;
-  const destStride = region.width * 4;
-  for (let y = 0; y < region.height; y += 1) {
-    const sourceStart = (region.y + y) * sourceStride + region.x * 4;
-    const sourceEnd = sourceStart + destStride;
-    cropped.set(rgba.subarray(sourceStart, sourceEnd), y * destStride);
+  const cropped: Record<string, LoadedChannel> = {};
+  for (const [name, channel] of Object.entries(channels)) {
+    if (channel.data.length !== imageWidth * imageHeight) {
+      throw new Error(`Channel ${name} does not match image bounds.`);
+    }
+    const data = new Float32Array(region.width * region.height);
+    for (let y = 0; y < region.height; y += 1) {
+      const sourceStart = (region.y + y) * imageWidth + region.x;
+      data.set(channel.data.subarray(sourceStart, sourceStart + region.width), y * region.width);
+    }
+    cropped[name] = { ...channel, data };
   }
   return cropped;
 }
 
-export function tonemapRgbaToBytes(
-  rgba: Float32Array,
+export function tonemapChannelsToBytes(
+  channels: Record<string, LoadedChannel>,
+  rgbNames: [string, string, string],
   exposureStops: number,
   gamma = PNG_GAMMA,
 ): Uint8ClampedArray {
-  if (rgba.length % 4 !== 0) {
-    throw new Error("RGBA data length must be divisible by 4.");
-  }
   if (gamma <= 0) {
     throw new Error("Gamma must be greater than zero.");
   }
+  const [rName, gName, bName] = rgbNames;
+  const red = channels[rName]?.data;
+  const green = channels[gName]?.data;
+  const blue = channels[bName]?.data;
+  if (red === undefined || green === undefined || blue === undefined) {
+    throw new Error("The EXR must contain R, G, and B channels for PNG preview/export.");
+  }
+  if (red.length !== green.length || red.length !== blue.length) {
+    throw new Error("RGB channel sizes do not match.");
+  }
 
   const exposure = 2 ** exposureStops;
-  const bytes = new Uint8ClampedArray(rgba.length);
-  for (let i = 0; i < rgba.length; i += 4) {
-    bytes[i] = tonemapChannel(rgba[i] * exposure, gamma);
-    bytes[i + 1] = tonemapChannel(rgba[i + 1] * exposure, gamma);
-    bytes[i + 2] = tonemapChannel(rgba[i + 2] * exposure, gamma);
-    bytes[i + 3] = alphaChannel(rgba[i + 3]);
+  const bytes = new Uint8ClampedArray(red.length * 4);
+  for (let pixel = 0; pixel < red.length; pixel += 1) {
+    const out = pixel * 4;
+    bytes[out] = tonemapChannel(red[pixel] * exposure, gamma);
+    bytes[out + 1] = tonemapChannel(green[pixel] * exposure, gamma);
+    bytes[out + 2] = tonemapChannel(blue[pixel] * exposure, gamma);
+    bytes[out + 3] = 255;
   }
   return bytes;
+}
+
+export function findRgbChannelNames(channels: Record<string, LoadedChannel>): [string, string, string] {
+  if ("R" in channels && "G" in channels && "B" in channels) {
+    return ["R", "G", "B"];
+  }
+
+  const layers = new Map<string, Partial<Record<"R" | "G" | "B", string>>>();
+  for (const name of Object.keys(channels)) {
+    const dot = name.lastIndexOf(".");
+    if (dot < 0) {
+      continue;
+    }
+    const prefix = name.slice(0, dot);
+    const component = name.slice(dot + 1);
+    if (component === "R" || component === "G" || component === "B") {
+      const layer = layers.get(prefix) ?? {};
+      layer[component] = name;
+      layers.set(prefix, layer);
+    }
+  }
+
+  for (const prefix of [...layers.keys()].sort()) {
+    const layer = layers.get(prefix);
+    if (layer?.R !== undefined && layer.G !== undefined && layer.B !== undefined) {
+      return [layer.R, layer.G, layer.B];
+    }
+  }
+
+  throw new Error("The EXR must contain R, G, and B channels for PNG preview/export.");
 }
 
 export function drawRegionOutlines(
@@ -175,16 +222,6 @@ function tonemapChannel(value: number, gamma: number): number {
   }
   normalized = Math.min(Math.max(normalized, 0), 1);
   return Math.min(Math.max(Math.floor(normalized ** (1 / gamma) * 255 + 0.5), 0), 255);
-}
-
-function alphaChannel(value: number): number {
-  if (Number.isNaN(value) || value < 0) {
-    return 0;
-  }
-  if (!Number.isFinite(value) || value > 1) {
-    return 255;
-  }
-  return Math.floor(value * 255 + 0.5);
 }
 
 function clampInt(value: number, min: number, max: number): number {

@@ -1,12 +1,12 @@
 import JSZip from "jszip";
 
-import { encodeExrRgba } from "./exr";
+import { encodeExrChannels } from "./exr";
 import {
+  cropChannels,
   cropOutputStem,
-  cropRgba,
   drawRegionOutlines,
   fileStem,
-  tonemapRgbaToBytes,
+  tonemapChannelsToBytes,
   type CropBox,
   type ExportFailure,
   type LoadedExr,
@@ -33,10 +33,10 @@ export async function buildExportZip(
       const box = boxes[index];
       const label = `r${String(index + 1).padStart(2, "0")}`;
       try {
-        const cropped = cropRgba(image.rgba, image.width, image.height, box.region);
+        const cropped = cropChannels(image.channels, image.width, image.height, box.region);
         const stem = cropOutputStem(image.fileName, box.region, index);
-        const exrBytes = await encodeExrRgba(cropped, box.region.width, box.region.height);
-        const pngBytes = tonemapRgbaToBytes(cropped, exposureStops);
+        const exrBytes = encodeExrChannels(cropped, box.region.width, box.region.height);
+        const pngBytes = tonemapChannelsToBytes(cropped, image.rgbNames, exposureStops);
         zip.file(`${stem}.exr`, exrBytes);
         zip.file(`${stem}.png`, await pngBlobFromBytes(pngBytes, box.region.width, box.region.height));
         cropPairs += 1;
@@ -53,7 +53,7 @@ export async function buildExportZip(
   const refImage = images.find((image) => image.id === refId);
   if (refImage !== undefined) {
     try {
-      const overlay = tonemapRgbaToBytes(refImage.rgba, exposureStops);
+      const overlay = tonemapChannelsToBytes(refImage.channels, refImage.rgbNames, exposureStops);
       drawRegionOutlines(overlay, refImage.width, refImage.height, boxes);
       zip.file(
         `${fileStem(refImage.fileName)}_regions_overlay.png`,

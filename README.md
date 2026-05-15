@@ -8,11 +8,13 @@ Static GitHub Pages version of the Python EXR Cropper desktop app.
 - Select a reference image.
 - Create and edit crop boxes by dragging in the preview or editing coordinates.
 - Adjust exposure for preview and PNG export.
-- Download matching EXR and PNG crops plus a reference overlay PNG as `exr-crops.zip`.
+- Download matching lossless EXR and tonemapped PNG crops plus a reference overlay PNG as `exr-crops.zip`.
 
 ## Limits
 
-The web v1 is RGB(A)-based. It decodes EXR files through Three.js `EXRLoader` and exports RGBA float EXR crops through `EXRExporter`. It does not preserve arbitrary original EXR channels, original channel names, deep images, multipart images, or subsampled channels.
+The EXR crop output preserves all regular full-resolution channels, channel names, and channel pixel types through `@bb-studio/exr`. PNG preview/export is intentionally tonemapped to 8-bit for viewing and figure placement. Deep images, multipart workflows, and subsampled channels are not supported.
+
+For evaluation, use the exported `.exr` files rather than the `.png` files. The PNG files apply exposure, clipping, gamma, and 8-bit quantization.
 
 ## Development
 
