@@ -21,7 +21,7 @@ export async function loadExrFile(file: File): Promise<LoadedExr> {
   }
 
   return {
-    id: `${file.name}-${file.size}-${file.lastModified}-${crypto.randomUUID()}`,
+    id: `${file.name}-${file.size}-${file.lastModified}-${uniqueId()}`,
     fileName: file.name,
     width,
     height,
@@ -50,4 +50,11 @@ function numberFrom(value: unknown, label: string): number {
     throw new Error(`Decoded EXR ${label} is invalid.`);
   }
   return value;
+}
+
+function uniqueId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
