@@ -4,18 +4,15 @@
 
 ## Demo
 
-![PT 1 spp and reference overview](screenshots/demo-pt-ref-overview.png)
+![path tracer 1spp and path tracer reference overview](screenshots/demo-pt-ref-overview.png)
 
-The demo uses only these input files from `path-tracer-python/input_exr`:
-
-- `bistro_pathtracer_1spp_linear.PathTracer.color.0.exr`
-- `psf_bistro_fixed_reference_pt_1024spp.AccumulatePass.output.0.exr`
+The demo uses only `path tracer 1spp` and `path tracer reference`.
 
 ## Sample
 
-| PT 1 spp crop | Reference crop | Reference full-scene overlay |
+| path tracer 1spp crop | path tracer reference crop | path tracer reference full-scene overlay |
 | --- | --- | --- |
-| ![PT 1 spp crop](screenshots/sample-pt-1spp-crop.png) | ![Reference crop](screenshots/sample-reference-crop.png) | ![Reference full-scene overlay](screenshots/sample-reference-overlay.png) |
+| ![path tracer 1spp crop](screenshots/sample-pt-1spp-crop.png) | ![path tracer reference crop](screenshots/sample-reference-crop.png) | ![path tracer reference full-scene overlay](screenshots/sample-reference-overlay.png) |
 
 ## Usage
 
@@ -28,6 +25,6 @@ The demo uses only these input files from `path-tracer-python/input_exr`:
 
 ## Quality
 
-The exported `.exr` crop was checked against a Python OpenEXR crop from the PT 1 spp sample. `R`, `G`, and `B` were bit-exact with `max_abs=0.0`, so there was no quality or value loss in the EXR output.
+The exported `.exr` crop was checked against a Python OpenEXR crop from the `path tracer 1spp` sample. `R`, `G`, and `B` were bit-exact with `max_abs=0.0`, so there was no quality or value loss in the EXR output.
 
 Use the exported `.exr` files for evaluation. The `.png` files are tonemapped preview images for viewing and figures.
