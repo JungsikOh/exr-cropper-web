@@ -77,6 +77,10 @@ const elements = {
 if (elements.workspace === null) {
   throw new Error("Workspace element is missing.");
 }
+const filesPanel = elements.addFiles.closest<HTMLElement>(".panel");
+if (filesPanel === null) {
+  throw new Error("Files panel element is missing.");
+}
 
 setButton(elements.addFiles, "Add EXR", FilePlus2);
 setButton(elements.removeFile, "Remove", Trash2);
@@ -107,18 +111,8 @@ elements.exposure.addEventListener("input", () => {
 });
 elements.exportButton.addEventListener("click", () => void exportCrops());
 
-elements.workspace.addEventListener("dragover", (event) => {
-  event.preventDefault();
-  elements.workspace?.classList.add("dragging");
-});
-elements.workspace.addEventListener("dragleave", () => {
-  elements.workspace?.classList.remove("dragging");
-});
-elements.workspace.addEventListener("drop", (event) => {
-  event.preventDefault();
-  elements.workspace?.classList.remove("dragging");
-  void loadFiles(Array.from(event.dataTransfer?.files ?? []));
-});
+registerFileDropTarget(filesPanel);
+registerFileDropTarget(elements.workspace);
 
 elements.preview.addEventListener("pointerdown", beginDrag);
 elements.preview.addEventListener("pointermove", continueDrag);
@@ -161,6 +155,55 @@ async function loadFiles(files: File[]): Promise<void> {
   const refMessage = state.refId === null ? " Set a reference before export." : "";
   const failureMessage = failures.length > 0 ? ` Failed: ${failures.join(" | ")}` : "";
   setStatus(`Loaded ${loadedCount} file(s).${refMessage}${failureMessage}`);
+}
+
+function registerFileDropTarget(target: HTMLElement): void {
+  let dragDepth = 0;
+
+  target.addEventListener("dragenter", (event) => {
+    if (!isFileDrag(event)) {
+      return;
+    }
+    event.preventDefault();
+    dragDepth += 1;
+    target.classList.add("dragging");
+  });
+
+  target.addEventListener("dragover", (event) => {
+    if (!isFileDrag(event)) {
+      return;
+    }
+    event.preventDefault();
+    if (event.dataTransfer !== null) {
+      event.dataTransfer.dropEffect = "copy";
+    }
+    target.classList.add("dragging");
+  });
+
+  target.addEventListener("dragleave", (event) => {
+    if (!isFileDrag(event)) {
+      return;
+    }
+    dragDepth = Math.max(0, dragDepth - 1);
+    if (dragDepth === 0) {
+      target.classList.remove("dragging");
+    }
+  });
+
+  target.addEventListener("drop", (event) => {
+    if (!isFileDrag(event)) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    dragDepth = 0;
+    target.classList.remove("dragging");
+    void loadFiles(Array.from(event.dataTransfer?.files ?? []));
+  });
+}
+
+function isFileDrag(event: DragEvent): boolean {
+  return Array.from(event.dataTransfer?.types ?? []).includes("Files");
 }
 
 function removeCurrentFile(): void {

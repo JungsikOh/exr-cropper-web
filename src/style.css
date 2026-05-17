@@ -114,6 +114,13 @@ button.export {
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
 }
 
+.panel.dragging {
+  border-color: #79c7c4;
+  box-shadow:
+    0 0 0 1px #79c7c4,
+    0 1px 0 rgba(255, 255, 255, 0.03) inset;
+}
+
 .panel-title {
   color: #d3d9e2;
   font-size: 13px;
